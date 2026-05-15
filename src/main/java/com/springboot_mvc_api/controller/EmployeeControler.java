@@ -1,6 +1,7 @@
 package com.springboot_mvc_api.controller;
 
 import com.springboot_mvc_api.dto.EmployeeDTO;
+import com.springboot_mvc_api.exception.ResourceNotFoundException;
 import com.springboot_mvc_api.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,12 +27,12 @@ public class EmployeeControler {
         return "Server up....";
     }*/
 
-    @GetMapping("/{employeeId}")
+    @GetMapping(path = "/{employeeId}")
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable(name = "employeeId") Long id) {
         Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(id);
         return employeeDTO
                 .map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
     }
 
     @GetMapping
@@ -39,7 +40,6 @@ public class EmployeeControler {
                                                              @RequestParam(required = false) String sortBy) {
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
-
 
     @PostMapping
     public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO inputEmployee) {
@@ -49,8 +49,8 @@ public class EmployeeControler {
 
 
     @PutMapping(path = "/{employeeId}")
-    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody EmployeeDTO employeeDTO, @PathVariable Long employeeId) {
-        return ResponseEntity.ok(employeeService.updateEmployeeById(employeeDTO, employeeId));
+    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody @Valid EmployeeDTO employeeDTO, @PathVariable Long employeeId) {
+        return ResponseEntity.ok(employeeService.updateEmployeeById(employeeId, employeeDTO));
     }
 
     @DeleteMapping(path = "/{employeeId}")
